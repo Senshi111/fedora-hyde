@@ -24,10 +24,6 @@ curl -L "$HYPER_RPM_URL" -o "$TEMP_RPM"
 echo "Installing Hyper..."
 sudo dnf install -y "$TEMP_RPM"
 
-# Check if there are missing dependencies and install them
-echo "Fixing missing dependencies..."
-sudo dnf install -y $(sudo dnf repoquery --requires "$TEMP_RPM" | grep -v "provides")
-
 # Clean up
 rm -f "$TEMP_RPM"
 

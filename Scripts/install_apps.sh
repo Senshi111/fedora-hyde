@@ -74,6 +74,11 @@ packages=(
     hyprlock
     google-noto-fonts-all
     satty
+    scdoc
+    nwg-look
+    mangohud
+    swaylock-effects
+    swww
 )
 
 # Remove duplicates
