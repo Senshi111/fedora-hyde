@@ -22,13 +22,15 @@ curl -L "$HYPER_RPM_URL" -o "$TEMP_RPM"
 
 # Install Hyper
 echo "Installing Hyper..."
-sudo dnf install "$TEMP_RPM"
+sudo dnf install -y "$TEMP_RPM"
 
-# Fix missing dependencies (if any)
-sudo dnf install -y
+# Check if there are missing dependencies and install them
+echo "Fixing missing dependencies..."
+sudo dnf install -y $(sudo dnf repoquery --requires "$TEMP_RPM" | grep -v "provides")
 
 # Clean up
 rm -f "$TEMP_RPM"
 
 echo "Hyper installation complete! You can launch it by running: hyper"
+
 

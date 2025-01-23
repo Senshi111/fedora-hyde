@@ -31,7 +31,7 @@ B = Backup - Backup the target
  Hyde core files 
 P|${HOME}/.config/hyde|config.toml|hyprland
 P|${HOME}/.config/hypr|hyde.conf animations.conf windowrules.conf keybindings.conf userprefs.conf monitors.conf|hyprland
-P|${HOME}/.config/hypr|nvidia.conf|hyprland nvidia-utils
+P|${HOME}/.config/hypr|nvidia.conf|hyprland akmod-nvidia
 P|${HOME}/.config/hypr/themes|theme.conf wallbash.conf colors.conf|hyprland
 P|${HOME}/.local/state|hyde|hyprland
 
@@ -97,7 +97,7 @@ S|${HOME}/.config|dunst|dunst
 S|${HOME}/.config|MangoHud|mangohud
 
  Launcher 
-P|${HOME}/.config|rofi|rofi
+P|${HOME}/.config|rofi|rofi-wayland
 S|${HOME}/.config|wlogout|wlogout
 
  Lock Screen 

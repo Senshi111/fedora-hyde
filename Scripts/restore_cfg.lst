@@ -43,7 +43,7 @@ N|Y|${HOME}/.config|fish|fish
 N|Y|${HOME}/.config|lsd|lsd
 Y|Y|${HOME}/.config/hyde|wallbash|hyprland
 Y|Y|${HOME}/.local/share|hyde|hyprland
-N|Y|${HOME}/.config/hypr|nvidia.conf|hyprland nvidia-utils
+N|Y|${HOME}/.config/hypr|nvidia.conf|hyprland akmod-nvidia
 N|Y|${HOME}/.config/hypr|hyde.conf keybindings.conf monitors.conf userprefs.conf animations.conf hyprland.conf windowrules.conf animations themes|hyprland
 Y|Y|${HOME}/.local/lib|hyde|hyprland
 Y|Y|${HOME}/.config|kitty|kitty
@@ -52,7 +52,7 @@ Y|Y|${HOME}/.config|MangoHud|mangohud
 Y|Y|${HOME}/.config|fastfetch|fastfetch
 Y|Y|${HOME}/.config|qt5ct|qt5ct
 Y|Y|${HOME}/.config|qt6ct|qt6ct
-Y|Y|${HOME}/.config|rofi|rofi
+Y|Y|${HOME}/.config|rofi|rofi-wayland
 Y|Y|${HOME}/.config|swaylock|swaylock-effects
 Y|Y|${HOME}/.config/waybar|modules config.jsonc style.css theme.css|waybar
 N|Y|${HOME}/.config/waybar|config.ctl|waybar

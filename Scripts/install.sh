@@ -129,7 +129,7 @@ EOF
 
     # Select the correct package list based on the package manager
     if [[ "$PKG_MANAGER" == "dnf" ]]; then
-        "${scrDir}/install_apps.sh"
+      sudo  "${scrDir}/install_apps.sh"
     fi
 
     # if [ -f "${cust_pkg}" ] && [ ! -z "${cust_pkg}" ]; then
@@ -139,34 +139,24 @@ EOF
     #--------------------------------#
     # add nvidia drivers to the list #
     #--------------------------------#
-    #if nvidia_detect; then
-    #     case "${PKG_MANAGER}" in
-    #         apt) echo "nvidia-driver" >> "${scrDir}/install_pkg.lst" ;;
-    #         dnf) echo "akmod-nvidia" >> "${scrDir}/install_pkg.lst" ;;
-    #         pacman)
-    #             echo "nvidia" >> "${scrDir}/install_pkg.lst"
-    #             echo "linux-headers" >> "${scrDir}/install_pkg.lst"
-    #         ;;
-    #     esac
-    #     nvidia_detect --verbose
-    # fi
+    if nvidia_detect; then
+        case "${PKG_MANAGER}" in
+            apt) echo "nvidia-driver" >> "${scrDir}/install_pkg.lst" ;;
+            dnf) sudo dnf install -y akmod-nvidia ;;
+            pacman)
+                echo "nvidia" >> "${scrDir}/install_pkg.lst"
+                echo "linux-headers" >> "${scrDir}/install_pkg.lst"
+            ;;
+        esac
+        nvidia_detect --verbose
+    fi
 
     # Install packages
-#       "${scrDir}/swww.sh"
- #      "${scrDir}/install_pokemon-colorscripts.sh"
- #      "${scrDir}/install_kvantum_qt6.sh"
-#        "${scrDir}/hyprutils.sh"
-#        "${scrDir}/build_hyprlang.sh"
-#        "${scrDir}/hyprcursor.sh"
-#        "${scrDir}/build_hyprwayland_scanner.sh"
-#        "${scrDir}/aquamarine.sh"
- #       "${scrDir}/install_grimblast.sh"
-#        "${scrDir}/install_hyprland.sh"
-#        "${scrDir}/install_xdg_hyprland.sh"
- #       "${scrDir}/install_hyper.sh"
-#        pipx install hyprshade
-#        pipx ensurepath
-        hyper install hyper-sunset
+#      "${scrDir}/install_pokemon-colorscripts.sh"
+#      "${scrDir}/install_kvantum_qt6.sh"
+#       "${scrDir}/install_grimblast.sh"
+#       "${scrDir}/install_hyper.sh"
+#        hyper install hyper-sunset
 fi
 
 #---------------------------#
