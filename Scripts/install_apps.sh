@@ -20,6 +20,7 @@ dnf update -y || { echo "Failed to update package list. Exiting."; exit 1; }
 
 # List of packages to install
 packages=(
+    ark
     pipewire
     wireplumber
     network-manager-applet
@@ -67,7 +68,6 @@ packages=(
     cava
     polkit-qt6-1
     lsd
-    neofetch
     pipx
     hyprland
     hypridle
