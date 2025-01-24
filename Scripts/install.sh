@@ -152,11 +152,11 @@ EOF
     fi
 
     # Install packages
-#      "${scrDir}/install_pokemon-colorscripts.sh"
-#      "${scrDir}/install_kvantum_qt6.sh"
-#       "${scrDir}/install_grimblast.sh"
-#       "${scrDir}/install_hyper.sh"
-        hyper install hyper-sunset
+     "${scrDir}/install_pokemon-colorscripts.sh"
+     "${scrDir}/install_kvantum_qt6.sh"
+     "${scrDir}/install_grimblast.sh"
+     "${scrDir}/install_hyper.sh"
+     hyper install hyper-sunset
 fi
 
 #---------------------------#
