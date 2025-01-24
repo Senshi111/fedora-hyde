@@ -78,3 +78,4 @@ if ! pkg_installed flatpak; then
 else
     print_log -y "[FLATPAK]" -b " :: " "flatpak is already installed"
 fi
+sudo systemctl set-default graphical.target
