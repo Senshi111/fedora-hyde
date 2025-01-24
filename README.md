@@ -42,13 +42,13 @@ https://github.com/prasanthrangan/hyprdots/assets/106020512/7f8fadc8-e293-4482-a
 
 ## Installation
 
-The installation script is designed for a minimal [Arch Linux](https://wiki.archlinux.org/title/Arch_Linux) install, but **may** work on some [Arch-based distros](https://wiki.archlinux.org/title/Arch-based_distributions).
+The installation script is designed for a minimal Fedora install, but **may** work on some Fedora DE.
 While installing HyDE alongside another [DE](https://wiki.archlinux.org/title/Desktop_environment)/[WM](https://wiki.archlinux.org/title/Window_manager) should work, due to it being a heavily customized setup, it **will** conflict with your [GTK](https://wiki.archlinux.org/title/GTK)/[Qt](https://wiki.archlinux.org/title/Qt) theming, [Shell](https://wiki.archlinux.org/title/Command-line_shell), [SDDM](https://wiki.archlinux.org/title/SDDM), [GRUB](https://wiki.archlinux.org/title/GRUB), etc. and is at your own risk.
 
 For Nixos support there is a separate project being maintained @ [Hydenix](https://github.com/richen604/hydenix/tree/main)
 
 > [!IMPORTANT]
-> The install script will auto-detect an NVIDIA card and install nvidia-dkms drivers for your kernel.
+> The install script will auto-detect an NVIDIA card and install akmod-nvidia drivers for your kernel.
 > Please ensure that your NVIDIA card supports dkms drivers in the list provided [here](https://wiki.archlinux.org/title/NVIDIA).
 
 > [!CAUTION]
@@ -64,15 +64,8 @@ cd ~/HyDE/Scripts
 ```
 
 > [!TIP]
-> You can also add any other apps you wish to install alongside HyDE to `Scripts/pkg_user.lst` and pass the file as a parameter to install it like so:
+> You can also add any other apps you wish to install alongside HyDE to `Scripts/install_apps.sh` 
 >
-> ```shell
-> ./install.sh pkg_user.lst
-> ```
-
-> [!IMPORTANT]
-> Refer your list from `Scripts/pkg_extra.lst`
-> or you can `cp  Scripts/pkg_extra.lst Scripts/pkg_user.lst` if you wish to install all extra packages.
 
 <!--
 
