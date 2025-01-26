@@ -91,6 +91,7 @@ dnf update -y || { echo "Failed to update package list. Exiting."; exit 1; }
 # List of packages to install
 packages=(
     ark
+    alsa-firmware
     pipewire
     wireplumber
     network-manager-applet
