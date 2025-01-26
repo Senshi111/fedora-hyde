@@ -262,8 +262,11 @@ done <<<"${wallpapers}"
 echo -en "${restore_list}" >"${Theme_Dir}/restore_cfg.lst"
 print_prompt -g "\n[exec] " "restore_cfg.sh \"${Theme_Dir}/restore_cfg.lst\" \"${Theme_Dir}/Configs\" \"${Fav_Theme}\"\n"
 "${scrDir}/restore_cfg.sh" "${Theme_Dir}/restore_cfg.lst" "${Theme_Dir}/Configs" "${Fav_Theme}" &>/dev/null
-[ "${3}" == "--skipcaching" ] || "$HOME/.local/lib/hyde/swwwallcache.sh" -t "${Fav_Theme}"
+if [ "${3}" != "--skipcaching" ]; then
+    "$HOME/.local/lib/hyde/swwwallcache.sh" -t "${Fav_Theme}"
+    "$HOME/.local/lib/hyde/themeswitch.sh"
+fi
 
-print_prompt -y "\nNote: Warnings are not errors. Please review the output above for any warnings."
+print_prompt -y "\nNote: Warnings are not errors. Review the output to check if it concerns you."
 
 exit 0
