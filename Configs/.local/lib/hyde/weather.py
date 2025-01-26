@@ -32,9 +32,16 @@ WEATHER_CODES = {
 data = {}
 
 
+get_location = os.getenv('WAYBAR_WEATHER_LOC', 'True')
 
-weather = requests.get("https://wttr.in/?format=j1").json()
-with_location = os.getenv('WAYBAR_WEATHER_LOC', True)
+if get_location.lower() in ('false', '0', 'f', 'n', 'no'):
+    set_location = False
+    weather = requests.get("https://wttr.in/?format=j1").json()
+else:
+    set_location = True
+    if get_location == 'True':
+        get_location = ''
+    weather = requests.get(f"https://wttr.in/{get_location}?format=j1").json()
 
 def format_time(time):
     return time.replace("00", "").zfill(2)
@@ -67,11 +74,12 @@ if tempint > 0 and tempint < 10:
     extrachar = '+'
 
 
-if with_location is True:
+if set_location is True :
     data['text'] = ' '+WEATHER_CODES[weather['current_condition'][0]['weatherCode']] + \
         " "+extrachar+weather['current_condition'][0]['FeelsLikeC']+"°" +" | "+ weather['nearest_area'][0]['areaName'][0]['value']+\
         ", "  + weather['nearest_area'][0]['country'][0]['value']
-else:
+
+if set_location is False:
     data['text'] = ' '+WEATHER_CODES[weather['current_condition'][0]['weatherCode']] + \
         " "+extrachar+weather['current_condition'][0]['FeelsLikeC']+"°" 
 
@@ -93,6 +101,11 @@ for i, day in enumerate(weather['weather']):
     for hour in day['hourly']:
         if i == 0:
             if int(format_time(hour['time'])) < datetime.now().hour-2:
+                continue
+        data['tooltip'] += f"{format_time(hour['time'])} {WEATHER_CODES[hour['weatherCode']]} {format_temp(hour['FeelsLikeC'])} {hour['weatherDesc'][0]['value']}, {format_chances(hour)}\n"
+
+
+print(json.dumps(data))
                 continue
         data['tooltip'] += f"{format_time(hour['time'])} {WEATHER_CODES[hour['weatherCode']]} {format_temp(hour['FeelsLikeC'])} {hour['weatherDesc'][0]['value']}, {format_chances(hour)}\n"
 
