@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1091
 
 # xdg resolution
@@ -147,14 +147,10 @@ fi
 
 pkg_installed() {
     local pkgIn=$1
-    
-    # Check if the package is installed via DNF
-    if dnf list installed "${pkgIn}" &>/dev/null; then
+    if pacman -Qi "${pkgIn}" &>/dev/null; then
         return 0
-    # Check if the package is installed via Flatpak
-    elif flatpak info "${pkgIn}" &>/dev/null; then
+    elif pacman -Qi "flatpak" &>/dev/null && flatpak info "${pkgIn}" &>/dev/null; then
         return 0
-    # Check if the command exists in the system (e.g., executable in the $PATH)
     elif command -v "${pkgIn}" &>/dev/null; then
         return 0
     else

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # shellcheck source=$HOME/.local/bin/hyde-shell
 # shellcheck disable=SC1091
@@ -29,9 +29,16 @@ fi
 fn_select() {
 
     # Set rofi scaling
-    rofiScale="${ROFI_ANIMATION_SCALE}"
-    [[ "${rofiScale}" =~ ^[0-9]+$ ]] || rofiScale=${ROFI_SCALE:-10}
-    r_scale="configuration {font: \"JetBrainsMono Nerd Font ${rofiScale}\";}"
+    font_scale="${ROFI_ANIMATION_SCALE}"
+    [[ "${font_scale}" =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
+
+    # Set font name
+    font_name=${ROFI_ANIMATION_FONT:-$ROFI_FONT}
+    font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+    font_name=${font_name:-$(get_hyprConf "FONT")}
+
+    # Set rofi font override
+    font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} ${font_scale}\";}"
 
     # Window and element styling
     hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
@@ -51,7 +58,7 @@ $animation_items"
         rofi -dmenu -i -select "$rofi_select" \
             -p "Select animation" \
             -theme-str "entry { placeholder: \"Select animation...\"; }" \
-            -theme-str "${r_scale}" \
+            -theme-str "${font_override}" \
             -theme-str "${r_override}" \
             -theme-str "$(get_rofi_pos)" \
             -theme "clipboard")

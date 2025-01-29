@@ -105,9 +105,16 @@ fn_art() {
 # hyprlock selector
 fn_select() {
     # Set rofi scaling
-    rofiScale="${ROFI_HYPRLOCK_SCALE}"
-    [[ "${rofiScale}" =~ ^[0-9]+$ ]] || rofiScale=${ROFI_SCALE:-10}
-    r_scale="configuration {font: \"JetBrainsMono Nerd Font ${rofiScale}\";}"
+    font_scale="${ROFI_HYPRLOCK_SCALE}"
+    [[ "${font_scale}" =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
+
+    # set font name
+    font_name=${ROFI_HYPRLOCK_FONT:-$ROFI_FONT}
+    font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+    font_name=${font_name:-$(get_hyprConf "FONT")}
+
+    # set rofi font override
+    font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} ${font_scale}\";}"
 
     # Window and element styling
     hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
@@ -132,7 +139,7 @@ $layout_items"
         rofi -dmenu -i -select "${HYPRLOCK_LAYOUT}" \
             -p "Select hyprlock layout" \
             -theme-str "entry { placeholder: \"🔒 Hyprlock Layout...\"; }" \
-            -theme-str "${r_scale}" \
+            -theme-str "${font_override}" \
             -theme-str "${r_override}" \
             -theme-str "$(get_rofi_pos)" \
             -theme "${ROFI_HYPRLOCK_STYLE:-clipboard}")

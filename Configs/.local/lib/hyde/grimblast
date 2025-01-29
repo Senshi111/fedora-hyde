@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ## Grimblast: a helper for screenshots within hyprland
 ## Requirements:
 ##  - `grim`: screenshot utility for wayland

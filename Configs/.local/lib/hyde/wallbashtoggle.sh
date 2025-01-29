@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #// set variables
 
@@ -11,9 +11,9 @@ wallbashModes=("theme" "auto" "dark" "light")
 #// rofi select mode
 
 rofi_wallbash() {
-    rofiScale=$ROFI_WALLBASH_MODE_SCALE
-    [[ "${rofiScale}" =~ ^[0-9]+$ ]] || rofiScale=${ROFI_SCALE:-10}
-    r_scale="configuration {font: \"JetBrainsMono Nerd Font ${rofiScale}\";}"
+    font_scale=$ROFI_WALLBASH_MODE_SCALE
+    [[ "${font_scale}" =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
+    r_scale="configuration {font: \"JetBrainsMono Nerd Font ${font_scale}\";}"
     elem_border=$((hypr_border * 4))
     r_override="window{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"
     rofiSel=$(parallel echo {} ::: "${wallbashModes[@]}" | rofi -dmenu \

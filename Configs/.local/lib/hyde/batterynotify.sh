@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 dock=${BATTERY_NOTIFY_DOCK:-true}
 scrDir=$(dirname "$(realpath "$0")")

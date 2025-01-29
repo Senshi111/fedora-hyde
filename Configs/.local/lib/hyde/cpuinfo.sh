@@ -2,10 +2,9 @@
 # From https://github.com/prasanthrangan/hyprdots/pull/952
 # All credits to https://github.com/mislah
 # Modified: The HyDE Project
-# Benchmark 1: cpuinfo.sh
-#   Time (mean ± σ):     189.0 ms ±  33.4 ms    [User: 71.4 ms, System: 64.5 ms]
-#   Range (min … max):   116.7 ms … 242.8 ms    15 runs
-# Benchmark Tool: hyperfine
+#  Benchmark 1: cpuinfo.sh
+#   Time (mean ± σ):     159.4 ms ±  26.1 ms    [User: 38.6 ms, System: 62.2 ms]
+#   Range (min … max):    99.8 ms … 182.7 ms    17 runs
 
 map_floor() {
     IFS=', ' read -r -a pairs <<<"$1"
@@ -48,13 +47,13 @@ init_query() {
 
     # Get initial CPU stat
     statFile=$(head -1 /proc/stat)
-    if [[ -z "$prevStat" ]]; then
-        prevStat=$(awk '{print $2+$3+$4+$6+$7+$8 }' <<<"$statFile")
-        echo "prevStat=\"$prevStat\"" >>"${cpu_info_file}"
+    if [[ -z "$CPUINFO_PREV_STAT" ]]; then
+        CPUINFO_PREV_STAT=$(awk '{print $2+$3+$4+$6+$7+$8 }' <<<"$statFile")
+        echo "CPUINFO_PREV_STAT=\"$CPUINFO_PREV_STAT\"" >>"${cpu_info_file}"
     fi
-    if [[ -z "$prevIdle" ]]; then
-        prevIdle=$(awk '{print $5 }' <<<"$statFile")
-        echo "prevIdle=\"$prevIdle\"" >>"${cpu_info_file}"
+    if [[ -z "$CPUINFO_PREV_IDLE" ]]; then
+        CPUINFO_PREV_IDLE=$(awk '{print $5 }' <<<"$statFile")
+        echo "CPUINFO_PREV_IDLE=\"$CPUINFO_PREV_IDLE\"" >>"${cpu_info_file}"
     fi
 }
 
@@ -91,6 +90,27 @@ get_temp_color() {
     done
 }
 
+get_utilization() {
+    local statFile currStat currIdle diffStat diffIdle utilization
+    statFile=$(head -1 /proc/stat)
+    currStat=$(awk '{print $2+$3+$4+$6+$7+$8 }' <<<"$statFile")
+    currIdle=$(awk '{print $5 }' <<<"$statFile")
+    diffStat=$((currStat - CPUINFO_PREV_STAT))
+    diffIdle=$((currIdle - CPUINFO_PREV_IDLE))
+
+    # Store state and sleep
+    CPUINFO_PREV_STAT=$currStat
+    CPUINFO_PREV_IDLE=$currIdle
+
+    # Save the current state to the file
+    sed -i -e "/^CPUINFO_PREV_STAT=/c\CPUINFO_PREV_STAT=\"$currStat\"" -e "/^CPUINFO_PREV_IDLE=/c\CPUINFO_PREV_IDLE=\"$currIdle\"" "$cpuinfo_file" || {
+        echo "CPUINFO_PREV_STAT=\"$currStat\"" >>"$cpuinfo_file"
+        echo "CPUINFO_PREV_IDLE=\"$currIdle\"" >>"$cpuinfo_file"
+    }
+
+    awk -v stat="$diffStat" -v idle="$diffIdle" 'BEGIN {printf "%.1f", (stat/(stat+idle))*100}'
+}
+
 cpuinfo_file="/tmp/hyde-${UID}-processors"
 # shellcheck disable=SC1090
 source "${cpuinfo_file}"
@@ -106,30 +126,52 @@ util_lv="90:, 60:󰓅, 30:󰾅, 󰾆"
 
 # Main loop
 
-# Get CPU stat
-statFile=$(head -1 /proc/stat)
-currStat=$(awk '{print $2+$3+$4+$6+$7+$8 }' <<<"$statFile")
-currIdle=$(awk '{print $5 }' <<<"$statFile")
-diffStat=$((currStat - prevStat))
-diffIdle=$((currIdle - prevIdle))
-
 # Get dynamic CPU information
-utilization=$(awk -v stat="$diffStat" -v idle="$diffIdle" 'BEGIN {printf "%.1f", (stat/(stat+idle))*100}')
-temperature=$(sensors | awk -F': ' '/Package id 0|Tccd1|Tccd2|Tctl/ { gsub(/^ *\+?|\..*/,"",$2); print $2; f=1; exit} END { if (!f) print "N/A"; }')
-frequency=$(awk '/cpu MHz/{ sum+=$4; c+=1 } END { printf "%.0f", sum/c }' /proc/cpuinfo)
+sensors_json=$(sensors -j)
+
+# TODO: Add support for more sensor chips
+cpu_temps="$(jq -r '[
+.["coretemp-isa-0000"], 
+.["k10temp-pci-00c3"]
+] | 
+map(select(. != null)) | 
+map(to_entries) | 
+add | 
+map(select(.value | 
+objects) | 
+"\(.key): \((.value | 
+to_entries[] | 
+select(.key | 
+test("temp[0-9]+_input")) | 
+.value | floor))°C") | 
+join("\\n\t")' <<<"$sensors_json")"
+
+if [ -n "${CPUINFO_TEMPERATURE_ID}" ]; then
+    temperature=$(grep -oP "(?<=${CPUINFO_TEMPERATURE_ID}: )\d+" <<<"${cpu_temps}")
+fi
+
+if [[ -z "$temperature" ]]; then
+    # Extract the first temperature from the JSON
+    cpu_temp_line="${cpu_temps%%$'°C'*}" # Get the first line
+    temperature="${cpu_temp_line#*: }"   # Remove everything before the colon and space
+fi
+
+utilization=$(get_utilization)
+frequency=$(perl -ne 'BEGIN { $sum = 0; $count = 0 } if (/cpu MHz\s+:\s+([\d.]+)/) { $sum += $1; $count++ } END { if ($count > 0) { printf "%.2f\n", $sum / $count } else { print "NaN\n" } }' /proc/cpuinfo)
 
 # Generate glyphs
 icons="$(map_floor "$util_lv" "$utilization")$(map_floor "$temp_lv" "$temperature")"
 speedo="${icons:0:1}"
 thermo="${icons:1:1}"
 emoji="${icons:2}"
-temp_colored=$(get_temp_color "${temperature}")
+
+# Prepare the tooltip string
+tooltip_str="$emoji $CPUINFO_MODEL\n"
+[[ -n "$thermo" ]] && tooltip_str+="$thermo Temperature: \n\t$cpu_temps \n"
+[[ -n "$speedo" ]] && tooltip_str+="$speedo Utilization: $utilization%\n"
+tooltip_str+=" Clock Speed: $frequency/$CPUINFO_MAX_FREQ MHz"
 
 # Print the output
 cat <<JSON
-{"text":"$thermo $temp_colored", "tooltip":"$emoji $CPUINFO_MODEL\n$thermo Temperature: $temp_colored \n$speedo Utilization: $utilization%\n Clock Speed: $frequency/$CPUINFO_MAX_FREQ MHz"}
+{"text":"$thermo $(get_temp_color "${temperature}")", "tooltip":"$tooltip_str"}
 JSON
-
-# Store state and sleep
-prevStat=$currStat
-prevIdle=$currIdle

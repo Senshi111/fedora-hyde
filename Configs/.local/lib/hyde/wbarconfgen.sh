@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # read control file and initialize variables
 
@@ -160,5 +160,12 @@ cat "${modules_dir}/footer.jsonc" >>"${conf_file}"
 
 if [ "$reload_flag" == "1" ]; then
     killall waybar
-    waybar --config "${waybar_dir}/config.jsonc" --style "${waybar_dir}/style.css" >/dev/null 2>&1 &
+    if [ -f "${waybar_dir}/config" ] && [ -s "${waybar_dir}/config" ]; then
+        waybar &
+        disown
+    else
+        waybar --config "${waybar_dir}/config.jsonc" --style "${waybar_dir}/style.css" 2>&1 &
+        disown
+    fi
+
 fi

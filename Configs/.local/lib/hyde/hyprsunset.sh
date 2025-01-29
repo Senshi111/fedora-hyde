@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/env bash
 
 # Set directory paths and file locations
 scrDir=$(dirname "$(realpath "$0")")

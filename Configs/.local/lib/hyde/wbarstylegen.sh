@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # detect hypr theme and initialize variables
 
@@ -104,8 +104,8 @@ left | right)
     ;;
 esac
 
-theme_font="$(get_hyprConf WAYBAR_FONT)"
-WAYBAR_FONT=${theme_font:-$WAYBAR_FONT}
+font_name=${WAYBAR_FONT:-$(get_hyprConf "WAYBAR_FONT")}
+export font_name=${font_name:-"JetBrainsMono Nerd Font"}
 
 # list modules and generate theme style
 export modules_ls

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #// set variables
 
@@ -16,24 +16,41 @@ fi
 
 rofi_config="${ROFI_LAUNCH_STYLE:-$rofi_config}"
 
-rofiScale="${ROFI_LAUNCHER_SCALE}"
-[[ "${rofiScale}" =~ ^[0-9]+$ ]] || rofiScale=${ROFI_SCALE:-10}
+font_scale="${ROFI_LAUNCHER_SCALE}"
+[[ "${font_scale}" =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
 
 #// rofi action
 
 case "${1}" in
-d | --drun) r_mode="drun" ;;
-w | --window) r_mode="window" ;;
-f | --filebrowser) r_mode="filebrowser" ;;
-r | --run) r_mode="run" ;;
+d | --drun)
+    r_mode="drun"
+    rofi_config="${ROFI_LAUNCH_DRUN_STYLE:-$rofi_config}"
+    ;;
+w | --window)
+    r_mode="window"
+    rofi_config="${ROFI_LAUNCH_WINDOW_STYLE:-$rofi_config}"
+    ;;
+f | --filebrowser)
+    r_mode="filebrowser"
+    rofi_config="${ROFI_LAUNCH_FILEBROWSER_STYLE:-$rofi_config}"
+    ;;
+r | --run)
+    r_mode="run"
+    rofi_config="${ROFI_LAUNCH_RUN_STYLE:-$rofi_config}"
+    ;;
 h | --help)
     echo -e "$(basename "${0}") [action]"
     echo "d :  drun mode"
     echo "w :  window mode"
     echo "f :  filebrowser mode,"
+    echo "r :  run mode"
     exit 0
     ;;
-*) r_mode="drun" ;;
+*)
+    r_mode="drun"
+    ROFI_LAUNCH_DRUN_STYLE="${ROFI_LAUNCH_DRUN_STYLE:-$ROFI_LAUNCH_STYLE}"
+    rofi_config="${ROFI_LAUNCH_DRUN_STYLE:-$rofi_config}"
+    ;;
 esac
 
 #// set overrides
@@ -41,22 +58,29 @@ hypr_border="${hypr_border:-10}"
 hypr_width="${hypr_width:-2}"
 wind_border=$((hypr_border * 3))
 
-if [[ "$ROFI_LAUNCH_FULLSCREEN" == "true" ]]; then
+if [[ -f "${HYDE_STATE_HOME}/fullscreen_${r_mode}" ]]; then
     hypr_width="0"
     wind_border="0"
 fi
 
 [ "${hypr_border}" -eq 0 ] && elem_border="10" || elem_border=$((hypr_border * 2))
 r_override="window {border: ${hypr_width}px; border-radius: ${wind_border}px;} element {border-radius: ${elem_border}px;}"
-r_scale="configuration {font: \"JetBrainsMono Nerd Font ${rofiScale}\";}"
+
+# set font name
+font_name=${ROFI_LAUNCH_FONT:-$ROFI_FONT}
+font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "FONT")}
+
+# set rofi font override
+font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} ${font_scale}\";}"
+
 i_override="$(get_hyprConf "ICON_THEME")"
 i_override="configuration {icon-theme: \"${i_override}\";}"
 
 #// launch rofi
 rofi -show "${r_mode}" \
     -show-icons \
-    -config "${rofi_config}" \
-    -theme-str "${r_scale}" \
+    -theme-str "${font_override}" \
     -theme-str "${i_override}" \
     -theme-str "${r_override}" \
     -theme "${rofi_config}" &
@@ -72,9 +96,9 @@ disown
 rofi -show "${r_mode}" \
     -show-icons \
     -config "${rofi_config}" \
-    -theme-str "${r_scale}" \
+    -theme-str "${font_override}" \
     -theme-str "${i_override}" \
     -theme-str "${r_override}" \
     -theme "${rofi_config}" \
     -dump-theme |
-    { grep -q "fullscreen.*true" && set_conf "ROFI_LAUNCH_FULLSCREEN" "true"; } || set_conf "ROFI_LAUNCH_FULLSCREEN" "false"
+    { grep -q "fullscreen.*true" && touch "${HYDE_STATE_HOME}/fullscreen_${r_mode}"; } || rm -f "${HYDE_STATE_HOME}/fullscreen_${r_mode}"

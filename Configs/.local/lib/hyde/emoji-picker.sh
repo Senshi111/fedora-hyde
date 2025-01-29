@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Set variables
 scrDir=$(dirname "$(realpath "$0")")
@@ -9,9 +9,17 @@ confDir="${confDir:-$XDG_CONFIG_HOME}"
 cacheDir="${cacheDir:-$XDG_CACHE_HOME/hyde}"
 
 # Set rofi scaling
-rofiScale="${ROFI_EMOJI_SCALE}"
-[[ "${rofiScale}" =~ ^[0-9]+$ ]] || rofiScale=${ROFI_SCALE:-10}
-r_scale="configuration {font: \"JetBrainsMono Nerd Font ${rofiScale}\";}"
+font_scale="${ROFI_EMOJI_SCALE}"
+[[ "${font_scale}" =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
+
+# set font name
+font_name=${ROFI_EMOJI_FONT:-$ROFI_FONT}
+font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "FONT")}
+
+# set rofi font override
+font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} ${font_scale}\";}"
+
 hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
 wind_border=$((hypr_border * 3 / 2))
 elem_border=$((hypr_border == 0 ? 5 : hypr_border))
@@ -94,20 +102,20 @@ else
             -display-column-separator " " \
             -theme-str "listview {columns: 8;}" \
             -theme-str "entry { placeholder: \" 🔎 Emoji\";} ${rofi_position} ${r_override}" \
-            -theme-str "${r_scale}" \
+            -theme-str "${font_override}" \
             -theme-str "${size_override}" \
             -theme "clipboard" <<<"${unique_entries}")
         ;;
     1 | list)
         dataEmoji=$(rofi -dmenu -multi-select -i \
             -theme-str "entry { placeholder: \" 🔎 Emoji\";} ${rofi_position} ${r_override}" \
-            -theme-str "${r_scale}" \
+            -theme-str "${font_override}" \
             -theme "clipboard" <<<"${unique_entries}")
         ;;
     *)
         dataEmoji=$(rofi -dmenu -multi-select -i \
             -theme-str "entry { placeholder: \" 🔎 Emoji\";} ${rofi_position} ${r_override}" \
-            -theme-str "${r_scale}" \
+            -theme-str "${font_override}" \
             -theme "${emoji_style:-clipboard}" <<<"${unique_entries}")
         ;;
     esac

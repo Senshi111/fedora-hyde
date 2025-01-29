@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 pkill -x rofi && exit
 scrDir=$(dirname "$(realpath "$0")")
@@ -47,8 +47,16 @@ r_listview="listview { lines: ${kb_hint_line:-13}; }"
 r_override="window {$r_height $r_width border: ${hypr_width}px; border-radius: ${wind_border}px;} entry {border-radius: ${elem_border}px;} element {border-radius: ${elem_border}px;} ${r_listview} "
 
 # Read hypr font size
-fnt_override=$(gsettings get org.gnome.desktop.interface font-name | awk '{gsub(/'\''/,""); print $NF}')
-fnt_override="configuration {font: \"JetBrainsMono Nerd Font ${fnt_override}\";}"
+font_scale="${ROFI_KEYBIND_HINT_SCALE:-$(gsettings get org.gnome.desktop.interface font-name | awk '{gsub(/'\''/,""); print $NF}')}"
+[[ "${font_scale}" =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
+
+# set font name
+font_name=${ROFI_KEYBIND_HINT_FONT:-$ROFI_FONT}
+font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "FONT")}
+
+# set rofi font override
+font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} ${font_scale}\";}"
 
 # Read hypr theme icon
 icon_override=$(gsettings get org.gnome.desktop.interface icon-theme | sed "s/'//g")
@@ -60,7 +68,7 @@ selected=$(echo -e "$output" | rofi -dmenu -p \
   -p -i \
   -display-columns 1 \
   -display-column-separator ":::" \
-  -theme-str "${fnt_override}" \
+  -theme-str "${font_override}" \
   -theme-str "${r_override}" \
   -theme-str "${icon_override}" \
   -theme "${ROFI_KEYBIND_HINT_STYLE:-clipboard}" | sed 's/.*\s*//')

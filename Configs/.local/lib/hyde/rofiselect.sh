@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #// set variables
 
@@ -14,9 +14,17 @@ rofiStyleDir="${SHARE_DIR}/hyde/rofi/themes"
 rofiAssetDir="${SHARE_DIR}/hyde/rofi/assets"
 
 #// set rofi scaling
-rofiScale=$ROFI_SELECT_SCALE
-[[ "${rofiScale}" =~ ^[0-9]+$ ]] || rofiScale=${ROFI_SCALE:-10}
-r_scale="configuration {font: \"JetBrainsMono Nerd Font ${rofiScale}\";}"
+font_scale=$ROFI_SELECT_SCALE
+[[ "${font_scale}" =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
+
+# set font name
+font_name=${ROFI_SELECT_FONT:-$ROFI_FONT}
+font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "FONT")}
+
+# set rofi font override
+font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} ${font_scale}\";}"
+
 elem_border=$((hypr_border * 5))
 icon_border=$((elem_border - 5))
 
@@ -28,8 +36,8 @@ mon_x_res=$((mon_x_res * 100 / mon_scale))
 
 #// generate config
 
-elm_width=$(((20 + 12 + 16) * rofiScale))
-max_avail=$((mon_x_res - (4 * rofiScale)))
+elm_width=$(((20 + 12 + 16) * font_scale))
+max_avail=$((mon_x_res - (4 * font_scale)))
 col_count=$((max_avail / elm_width))
 [[ "${col_count}" -gt 5 ]] && col_count=5
 r_override="window{width:100%;} 
@@ -42,12 +50,14 @@ r_override="window{width:100%;}
 
 RofiSel=$(
     # shellcheck disable=SC2154
-    find "${rofiStyleDir}" -name "style_*" |
-        awk -F '[_.]' '{print $((NF - 1))}' |
-        while read styleNum; do
-            echo -en "${styleNum}\x00icon\x1f${rofiAssetDir}/style_${styleNum}.png\n"
+    find "${rofiStyleDir}" -type f -exec grep -l "Attr.*launcher.*" {} \; |
+        while read -r file; do
+            baseName=$(basename "${file}" .rasi)
+            assetFile="${file/rofi\/themes/rofi\/assets}"
+            assetFile="${assetFile%.rasi}.png"
+            echo -en "${baseName}\x00icon\x1f${assetFile}\n"
         done | sort -n | rofi -dmenu \
-        -theme-str "${r_scale}" \
+        -theme-str "${font_override}" \
         -theme-str "${r_override}" \
         -theme "${ROFI_SELECT_STYLE:-selector}" \
         -select "${rofiStyle}"
@@ -57,7 +67,7 @@ RofiSel=$(
 
 if [ -n "${RofiSel}" ]; then
     set_conf "rofiStyle" "${RofiSel}"
-    notify-send -a "HyDE Alert" -r 2 -t 2200 -i "${rofiAssetDir}/style_${RofiSel}.png" " style ${RofiSel} applied..."
+    notify-send -a "HyDE Alert" -r 2 -t 2200 -i "${rofiAssetDir}/${RofiSel}.png" " style ${RofiSel} applied..."
 fi
 if [ -n "$ROFI_LAUNCH_STYLE" ]; then
     notify-send -a "HyDE Alert" -r 3 -u critical "Style: '$ROFI_LAUNCH_STYLE' is explicitly set, remove it in ~/.config/hyde/config.toml for changes to take effect."

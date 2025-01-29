@@ -41,7 +41,8 @@ else:
     set_location = True
     if get_location == 'True':
         get_location = ''
-        weather = requests.get(f"https://wttr.in/{get_location}?format=j1", timeout=10).json() # timeout is 10 seconds
+
+    weather = requests.get(f"https://wttr.in/{get_location}?format=j1", timeout=10).json() # timeout is 10 seconds
 
 def format_time(time):
     return time.replace("00", "").zfill(2)
@@ -101,11 +102,6 @@ for i, day in enumerate(weather['weather']):
     for hour in day['hourly']:
         if i == 0:
             if int(format_time(hour['time'])) < datetime.now().hour-2:
-                continue
-        data['tooltip'] += f"{format_time(hour['time'])} {WEATHER_CODES[hour['weatherCode']]} {format_temp(hour['FeelsLikeC'])} {hour['weatherDesc'][0]['value']}, {format_chances(hour)}\n"
-
-
-print(json.dumps(data))
                 continue
         data['tooltip'] += f"{format_time(hour['time'])} {WEATHER_CODES[hour['weatherCode']]} {format_temp(hour['FeelsLikeC'])} {hour['weatherDesc'][0]['value']}, {format_chances(hour)}\n"
 
