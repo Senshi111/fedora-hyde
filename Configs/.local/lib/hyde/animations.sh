@@ -34,7 +34,7 @@ fn_select() {
 
     # Set font name
     font_name=${ROFI_ANIMATION_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
     font_name=${font_name:-$(get_hyprConf "FONT")}
 
     # Set rofi font override

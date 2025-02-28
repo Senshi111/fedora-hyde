@@ -12,6 +12,27 @@ confDir="${confDir:-$XDG_CONFIG_HOME}"
 cacheDir="${HYDE_CACHE_HOME:-"${XDG_CACHE_HOME}/hyde"}"
 WALLPAPER="${cacheDir}/wall.set"
 
+USAGE() {
+    cat <<EOF
+    Usage: $(basename "${0}") --[arg]
+
+    arguments:
+      --background -b    - Converts and ensures background to be a png
+                            : \$BACKGROUND_PATH
+      --mpris <player>   - Handles mpris thumbnail generation
+                            : \$MPRIS_IMAGE
+      --profile          - Generates the profile picture
+                            : \$PROFILE_IMAGE
+      --cava             - Placeholder function for cava
+                            : \$CAVA_CMD
+      --art              - Prints the path to the mpris art"
+                            : \$MPRIS_ART
+      --select      -s     - Selects the hyprlock layout"
+                            : \$LAYOUT_PATH
+      --help       -h    - Displays this help message"
+EOF
+}
+
 # Converts and ensures background to be a png
 fn_background() {
     WP="$(realpath "${WALLPAPER}")"
@@ -33,22 +54,23 @@ fn_profile() {
 }
 
 fn_mpris() {
-    local player=${1:-""}
+    local player=${1:-$(playerctl --list-all 2>/dev/null | head -n 1)}
     THUMB="${cacheDir}/landing/mpris"
-    if [ "$(playerctl -p "${player}" status)" == "Playing" ]; then
+    player_status="$(playerctl -p "${player}" status 2>/dev/null)"
+    if [[ "${player_status}" == "Playing" ]]; then
         playerctl -p "${player}" metadata --format "{{xesam:title}} $(mpris_icon "${player}")  {{xesam:artist}}"
         mpris_thumb "${player}"
     else
         if [ -f "$HOME/.face.icon" ]; then
             if ! cmp -s "$HOME/.face.icon" "${THUMB}.png"; then
                 cp -f "$HOME/.face.icon" "${THUMB}.png"
-                pkill -USR2 hyprlock 2>/dev/null # updates the mpris thumbnail
+                pkill -USR2 hyprlock /dev/null 2>&1 # updates the mpris thumbnail
 
             fi
         else
             if ! cmp -s "$XDG_DATA_HOME/icons/Wallbash-Icon/hyde.png" "${THUMB}.png"; then
                 cp "$XDG_DATA_HOME/icons/Wallbash-Icon/hyde.png" "${THUMB}.png"
-                pkill -USR2 hyprlock 2>/dev/null # updates the mpris thumbnail
+                pkill -USR2 hyprlock /dev/null 2>&1 # updates the mpris thumbnail
             fi
         fi
         exit 1
@@ -85,7 +107,7 @@ mpris_thumb() { # Generate thumbnail for mpris
     echo "${artUrl}" >"${THUMB}".lnk
     curl -Lso "${THUMB}".art "$artUrl"
     magick "${THUMB}.art" -quality 50 "${THUMB}.png"
-    pkill -USR2 hyprlock 2>&/dev/null # updates the mpris thumbnail
+    pkill -USR2 hyprlock /dev/null 2>&1 # updates the mpris thumbnail
 }
 
 fn_cava() {
@@ -110,7 +132,7 @@ fn_select() {
 
     # set font name
     font_name=${ROFI_HYPRLOCK_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
     font_name=${font_name:-$(get_hyprConf "FONT")}
 
     # set rofi font override
@@ -205,6 +227,10 @@ source = ${hyde_hyprlock_conf}
 # \$BACKGROUND_PATH
 # - The path to the wallpaper image.
 
+# \$HYPRLOCK_BACKGROUND
+# - The path to the static hyprlock wallpaper image.
+# - Can be set to set a static wallpaper for Hyprlock.
+
 # \$MPRIS_IMAGE
 # - The path to the MPRIS image.
 # - If MPRIS is not available, it will show the ~/.face.icon image
@@ -216,7 +242,7 @@ source = ${hyde_hyprlock_conf}
 # - if available, otherwise, it will show the HyDE logo.
 
 # \$GREET_TEXT
-# - The text to be displayed on the lock screen.
+# - A greeting text to be displayed on the lock screen.
 # - The text will be updated every hour.
 
 # \$resolve.font
@@ -225,36 +251,87 @@ source = ${hyde_hyprlock_conf}
 # - Note that you needed to have a network connection to download the font.
 # - You also need to restart Hyprlock to apply the font.
 
-# cmd [update:1000] $MPRIS_TEXT
+# cmd [update:1000] \$MPRIS_TEXT
 # - Text from media players in "Title  Author" format.
 
 
-# cmd [update:1000] $SPLASH_CMD
+# cmd [update:1000] \$SPLASH_CMD
 # - Outputs the song title when MPRIS is available,
 # - otherwise, it will output the splash command.
 
-# cmd [update:1] $CAVA_CMD
+# cmd [update:1] \$CAVA_CMD
 # - The command to be executed to get the CAVA output.
 # - ⚠️ (Use with caution as it eats up the CPU.)
 
+# cmd [update:5000] \$BATTERY_ICON
+# - The battery icon to be displayed on the lock screen.
+# - Only works if the battery is available.
+
+# cmd [update:1000] \$KEYBOARD_LAYOUT
+# - The current keyboard layout
+# - SUPER + K to change the keyboard layout (or any binding you set)
 
 CONF
 }
 
-fn_help() {
-    echo "Usage: hyprlock.sh [command]"
-    echo "Commands:"
-    echo "  background   - Converts and ensures background to be a png"
-    echo "  mpris        - Handles mpris thumbnail generation"
-    echo "  profile      - Generates the profile picture"
-    echo "  cava         - Placeholder function for cava"
-    echo "  art          - Prints the path to the mpris art"
-    echo "  select       - Selects the hyprlock layout"
-    echo "  help         - Displays this help message"
-}
-
-if declare -f "fn_${1}" >/dev/null; then
-    "fn_${1}"
-else
+if [ -z "${*}" ]; then
+    if [ ! -f "$HYDE_CACHE_HOME/wallpapers/hyprlock.png" ]; then
+        print_log -sec "hyprlock" -stat "setting" " $HYDE_CACHE_HOME/wallpapers/hyprlock.png"
+        "${scrDir}/wallpaper.sh" -s "$(readlink "${HYDE_THEME_DIR}/wall.set")" --backend hyprlock
+    fi
     hyprlock
 fi
+
+# Define long options
+LONGOPTS="select,background,profile,mpris:,cava,art,help"
+
+# Parse options
+PARSED=$(
+    if ! getopt --options shb --longoptions $LONGOPTS --name "$0" -- "$@"; then
+        exit 2
+    fi
+)
+
+# Apply parsed options
+eval set -- "$PARSED"
+
+while true; do
+    case "$1" in
+    select | -s | --select)
+        fn_select
+        exit 0
+        ;;
+    background | --background | -b)
+        fn_background
+        exit 0
+        ;;
+    profile | --profile)
+        fn_profile
+        exit 0
+        ;;
+    mpris | --mpris)
+        fn_mpris "${2}"
+        exit 0
+        ;;
+    cava | --cava) # Placeholder function for cava
+        fn_cava
+        exit 0
+        ;;
+    art | --art)
+        fn_art
+        exit 0
+        ;;
+    help | --help | -h)
+        USAGE
+        exit 0
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        break
+        ;;
+    esac
+    shift
+done

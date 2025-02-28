@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2154
 #|---/ /+--------------------------+---/ /|#
 #|--/ /-| Main installation script |--/ /-|#
@@ -8,12 +8,12 @@
 cat <<"EOF"
 
 -------------------------------------------------
-        
-                           _  _      ___  ___
-                          | || |_  _|   \| __|
-                           | __ | || | |) | _|
-                          |_||_|\_, |___/|___|
-                                 |__/
+        .
+       / \         _       _  _      ___  ___
+      /^  \      _| |_    | || |_  _|   \| __|
+     /  _  \    |_   _|   | __ | || | |) | _|
+    /  | | ~\     |_|     |_||_|\_, |___/|___|
+   /.-'   '-.\                  |__/
 
 -------------------------------------------------
 
@@ -28,10 +28,8 @@ if ! source "${scrDir}/global_fn.sh"; then
     echo "Error: unable to source global_fn.sh..."
     exit 1
 fi
-
 # Run the package manager detection
 detect_package_manager
-
 #------------------#
 # evaluate options #
 #------------------#
@@ -123,19 +121,16 @@ if [ ${flg_Install} -eq 1 ]; then
 
 EOF
 
-  # Prepare package list
+    #----------------------#
+    # prepare package list #
+    #----------------------#
     shift $((OPTIND - 1))
-    cust_pkg=$1
-
+    custom_pkg=$1
     # Select the correct package list based on the package manager
     if [[ "$PKG_MANAGER" == "dnf" ]]; then
       sudo  "${scrDir}/install_apps.sh"
     fi
-
-    # if [ -f "${cust_pkg}" ] && [ ! -z "${cust_pkg}" ]; then
-    #     cat "${cust_pkg}" >> "${scrDir}/install_pkg.lst"
-    # fi
-
+    echo -e "\n#user packages" >>"${scrDir}/install_pkg.lst" # Add a marker for user packages
     #--------------------------------#
     # add nvidia drivers to the list #
     #--------------------------------#
@@ -151,6 +146,9 @@ EOF
         nvidia_detect --verbose
     fi
 
+    #----------------#
+    # get user prefs #
+    #----------------#
     # Install packages
      "${scrDir}/install_pokemon-colorscripts.sh"
      "${scrDir}/install_kvantum_qt6.sh"
@@ -180,7 +178,7 @@ EOF
     "${scrDir}/restore_fnt.sh"
     "${scrDir}/restore_cfg.sh"
     "${scrDir}/restore_thm.sh"
-
+    print_log -g "[generate] " "cache ::" "Wallpapers..."
     if [ "${flg_DryRun}" -ne 1 ]; then
         "$HOME/.local/lib/hyde/swwwallcache.sh" -t ""
         "$HOME/.local/lib/hyde/themeswitch.sh" -q || true

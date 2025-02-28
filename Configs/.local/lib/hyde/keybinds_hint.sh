@@ -52,7 +52,7 @@ font_scale="${ROFI_KEYBIND_HINT_SCALE:-$(gsettings get org.gnome.desktop.interfa
 
 # set font name
 font_name=${ROFI_KEYBIND_HINT_FONT:-$ROFI_FONT}
-font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
 font_name=${font_name:-$(get_hyprConf "FONT")}
 
 # set rofi font override

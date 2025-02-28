@@ -16,7 +16,7 @@ hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.in
 
 #// scale for monitor
 mon_data=$(hyprctl -j monitors)
-mon_x_res=$(jq '.[] | select(.focused==true) | .width' <<<"${mon_data}")
+mon_x_res=$(jq '.[] | select(.focused==true) | if (.transform % 2 == 0) then .width else .height end' <<<"${mon_data}")
 mon_scale=$(jq '.[] | select(.focused==true) | .scale' <<<"${mon_data}" | sed "s/\.//")
 mon_x_res=$((mon_x_res * 100 / mon_scale))
 
@@ -28,7 +28,7 @@ selector_menu() {
 
     # set font name
     font_name=${ROFI_THEME_MENU_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
     font_name=${font_name:-$(get_hyprConf "FONT")}
 
     # set rofi font override
@@ -106,7 +106,7 @@ case "$1" in
 
     # set font name
     font_name=${ROFI_THEME_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
     font_name=${font_name:-$(get_hyprConf "FONT")}
 
     # set rofi font override

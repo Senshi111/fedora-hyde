@@ -28,22 +28,6 @@ Theme_Change() {
     done
 }
 
-toml_write() {
-    # Use kwriteconfig6 to write to config files in toml format
-    local config_file=$1
-    local group=$2
-    local key=$3
-    local value=$4
-
-    if ! kwriteconfig6 --file "${config_file}" --group "${group}" --key "${key}" "${value}" 2>/dev/null; then
-        if ! grep -q "^\[${group}\]" "${config_file}"; then
-            echo -e "\n[${group}]\n${key}=${value}" >>"${config_file}"
-        elif ! grep -q "^${key}=" "${config_file}"; then
-            sed -i "/^\[${group}\]/a ${key}=${value}" "${config_file}"
-        fi
-    fi
-}
-
 #// evaluate options
 quiet=false
 while getopts "qnps:" option; do
@@ -89,7 +73,8 @@ source "${scrDir}/globalcontrol.sh"
 
 #// hypr
 if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-    hyprctl keyword misc:disable_autoreload 1
+    hyprctl keyword misc:disable_autoreload 1 -q
+    export HYPRLAND_RELOAD=1
 fi
 # shellcheck disable=SC2154
 sed '1d' "${HYDE_THEME_DIR}/hypr.theme" >"${confDir}/hypr/themes/theme.conf" # Useless and already handled by swwwallbash.sh but kept for robustness
@@ -118,23 +103,27 @@ fi
 toml_write "${confDir}/qt5ct/qt5ct.conf" "Appearance" "icon_theme" "${gtkIcon}"
 toml_write "${confDir}/qt5ct/qt5ct.conf" "Fonts" "general" "\"${font_name},10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,\""
 toml_write "${confDir}/qt5ct/qt5ct.conf" "Fonts" "fixed" "\"${monospace_font_name},9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,\""
+# toml_write "${confDir}/qt5ct/qt5ct.conf" "Appearance" "color_scheme_path" "${confDir}/qt5ct/colors/colors.conf"
+# toml_write "${confDir}/qt5ct/qt5ct.conf" "Appearance" "custom_palette" "true"
 
 # // qt6ct
 
 toml_write "${confDir}/qt6ct/qt6ct.conf" "Appearance" "icon_theme" "${gtkIcon}"
 toml_write "${confDir}/qt6ct/qt6ct.conf" "Fonts" "general" "\"${font_name},10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,\""
 toml_write "${confDir}/qt6ct/qt6ct.conf" "Fonts" "fixed" "\"${monospace_font_name},9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,\""
+# toml_write "${confDir}/qt6ct/qt6ct.conf" "Appearance" "color_scheme_path" "${confDir}/qt6ct/colors/colors.conf"
+# toml_write "${confDir}/qt6ct/qt6ct.conf" "Appearance" "custom_palette" "true"
 
 # // kde plasma
 
 toml_write "${confDir}/kdeglobals" "Icons" "Theme" "${gtkIcon}"
-toml_write "${confDir}/kdeglobals" "UISettings" "ColorScheme" "${gtkTheme}"
 toml_write "${confDir}/kdeglobals" "General" "TerminalApplication" "${TERMINAL}"
+toml_write "${confDir}/kdeglobals" "UiSettings" "ColorScheme" "colors"
 
 # For KDE stuff
 
 toml_write "${confDir}/kdeglobals" "KDE" "widgetStyle" "kvantum"
-toml_write "${confDir}/kdeglobals" "Colors:View" "BackgroundNormal" "#00000000"
+# toml_write "${confDir}/kdeglobals" "Colors:View" "BackgroundNormal" "#00000000" #! This is set on wallbash
 
 # // gtk2
 
@@ -190,8 +179,19 @@ if [ ! -L "$HOME/.themes/${gtkTheme}" ] && [ -d "${themesDir}/${gtkTheme}" ]; th
 fi
 
 #// wallpaper
+export -f pkg_installed
+export scrDir
+find "$HYDE_CACHE_HOME/wallpapers" -name "*.png" -exec sh -c '
+    for file; do
+        base=$(basename "$file" .png)
+        if pkg_installed ${base}; then
+            "${scrDir}/wallpaper.sh" --link --backend "${base}"
+        fi
+    done
+' sh {} +
+
 if [ "$quiet" = true ]; then
-    "${scrDir}/swwwallpaper.sh" -s "$(readlink "${HYDE_THEME_DIR}/wall.set")" >/dev/null 2>&1
+    "${scrDir}/wallpaper.sh" -s "$(readlink "${HYDE_THEME_DIR}/wall.set")" --backend swww --global >/dev/null 2>&1
 else
-    "${scrDir}/swwwallpaper.sh" -s "$(readlink "${HYDE_THEME_DIR}/wall.set")"
+    "${scrDir}/wallpaper.sh" -s "$(readlink "${HYDE_THEME_DIR}/wall.set")" --backend swww --global
 fi

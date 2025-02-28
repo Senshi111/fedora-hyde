@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #|---/ /+--------------------------------------+---/ /|#
 #|--/ /-| Script to apply post install configs |--/ /-|#
 #|-/ /--| Prasanth Rangan                      |-/ /--|#
@@ -19,8 +19,7 @@ if pkg_installed sddm; then
     if [ ! -d /etc/sddm.conf.d ]; then
         sudo mkdir -p /etc/sddm.conf.d
     fi
-
-    if [ ! -f /etc/sddm.conf.d/kde_settings.hyde.bkp ]; then
+    if [ ! -f /etc/sddm.conf.d/backup_the_hyde_project.conf ] || [ "${HYDE_INSTALL_SDDM}" = true ]; then
         print_log -g "[DISPLAYMANAGER] " -b " :: " "configuring sddm..."
         print_log -g "[DISPLAYMANAGER] " -b " :: " "Select sddm theme:" -r "\n[1]" -b " Candy" -r "\n[2]" -b " Corners"
         read -p " :: Enter option number : " -r sddmopt
@@ -31,9 +30,9 @@ if pkg_installed sddm; then
         esac
 
         sudo tar -xzf "${cloneDir}/Source/arcs/Sddm_${sddmtheme}.tar.gz" -C /usr/share/sddm/themes/
-        sudo touch /etc/sddm.conf.d/kde_settings.conf
-        sudo cp /etc/sddm.conf.d/kde_settings.conf /etc/sddm.conf.d/kde_settings.hyde.bkp
-        sudo cp /usr/share/sddm/themes/${sddmtheme}/kde_settings.conf /etc/sddm.conf.d/
+        sudo touch /etc/sddm.conf.d/the_hyde_project.conf
+        sudo cp /etc/sddm.conf.d/the_hyde_project.conf /etc/sddm.conf.d/backup_the_hyde_project.conf
+        sudo cp /usr/share/sddm/themes/${sddmtheme}/the_hyde_project.conf /etc/sddm.conf.d/
     else
         print_log -y "[DISPLAYMANAGER] " -b " :: " "sddm is already configured..."
     fi
@@ -59,7 +58,7 @@ else
 fi
 
 # shell
-#"${scrDir}/restore_shl.sh"
+"${scrDir}/restore_shl.sh"
 
 # flatpak
 if ! pkg_installed flatpak; then
@@ -78,4 +77,3 @@ if ! pkg_installed flatpak; then
 else
     print_log -y "[FLATPAK]" -b " :: " "flatpak is already installed"
 fi
-sudo systemctl set-default graphical.target

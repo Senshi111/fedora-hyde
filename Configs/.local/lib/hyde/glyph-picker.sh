@@ -24,7 +24,7 @@ font_scale="${ROFI_GLYPH_SCALE}"
 
 # set font name
 font_name=${ROFI_GLYPH_FONT:-$ROFI_FONT}
-font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
 font_name=${font_name:-$(get_hyprConf "FONT")}
 
 # set rofi font override

@@ -14,7 +14,7 @@ font_scale="${ROFI_EMOJI_SCALE}"
 
 # set font name
 font_name=${ROFI_EMOJI_FONT:-$ROFI_FONT}
-font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
 font_name=${font_name:-$(get_hyprConf "FONT")}
 
 # set rofi font override

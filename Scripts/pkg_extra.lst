@@ -5,7 +5,7 @@
 # gestures                                             # gui for libinput-gestures
 wttrbar                                                # for weather
 python-requests|wttrbar                                # script dependency
-ddccui                                                 # GUI to control brightness for external monitors
+ddcui                                                  # GUI to control brightness for external monitors
 # hyprgui-bin                                          # GUI for hyprland configuration // might mess your userprefs but convenient // Just disappeared
 # swappy                                               # screenshot editor, DEPRECATED in favor for satty
 
@@ -37,8 +37,8 @@ spicetify-cli                                          # cli to customize spotif
 # pokemon-colorscripts-git|zsh                           # display pokemon sprites (optional)
 
 # --------------------------------------------------- // Editor
-# vscodium-bin                                          # Full oss text editor
-# vscodium-marketplace|vscodium-bin                 # VSCodium marketplace
+# vscodium                                              # Full oss text editor
+# vscodium-marketplace|vscodium                         # VSCodium marketplace
 # code-marketplace|code                                 # Code-Oss marketplace
 # visual-studio-code-bin                                # MS  text editor
 

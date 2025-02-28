@@ -23,8 +23,8 @@ window {
     location:                    center;
     anchor:                      center;
     fullscreen:                  true;
-    width:                       1366px;
-    height:                      768px;
+    width:                       100%;
+    height:                      100%;
     x-offset:                    0px;
     y-offset:                    0px;
 
@@ -90,7 +90,7 @@ entry {
 listview {
     enabled:                     true;
     columns:                     7;
-    lines:                       4;
+    lines:                       5;
     cycle:                       true;
     dynamic:                     true;
     scrollbar:                   false;
@@ -135,7 +135,7 @@ element normal.normal {
     text-color:                  @main-fg;
 }
 element selected.normal {
-    background-color:            white / 5%;
+    background-color:            white / 8%;
     text-color:                  @main-fg;
 }
 element-icon {
@@ -166,6 +166,6 @@ textbox {
     background-color:            transparent;
     text-color:                  @main-fg;
     vertical-align:              0.5;
-    horizontal-align:            0.0;
+    horizontal-align:            0.5;
     highlight:                   none;
 }

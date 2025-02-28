@@ -14,7 +14,7 @@ fi
  # Define the repository configuration content
 REPO_CONTENT="[copr:copr.fedorainfracloud.org:errornointernet:packages]
 name=Copr repo for packages owned by errornointernet
-baseurl=https://download.copr.fedorainfracloud.org/results/errornointernet/packages/fedora-\$releasever-\$basearch/
+baseurl=https://download.copr.fedorainfracloud.org/results/errornointernet/packages/fedora-\41-\$basearch/
 type=rpm-md
 skip_if_unavailable=True
 gpgcheck=1
@@ -44,7 +44,7 @@ echo "Repository configuration added successfully."
 # Define the repository content for nobara-testing with exclude=kernel*
 REPO_CONTENT="[copr:copr.fedorainfracloud.org:lionheartp:nobara-testing]
 name=Copr repo for nobara-testing owned by lionheartp
-baseurl=https://download.copr.fedorainfracloud.org/results/lionheartp/nobara-testing/fedora-\$releasever-\$basearch/
+baseurl=https://download.copr.fedorainfracloud.org/results/lionheartp/nobara-testing/fedora-\41-\$basearch/
 type=rpm-md
 skip_if_unavailable=True
 gpgcheck=1
@@ -56,7 +56,7 @@ exclude=kernel*
 
 [copr:copr.fedorainfracloud.org:lionheartp:nobara-testing:ml]
 name=Copr repo for nobara-testing owned by lionheartp (i386)
-baseurl=https://download.copr.fedorainfracloud.org/results/lionheartp/nobara-testing/fedora-\$releasever-i386/
+baseurl=https://download.copr.fedorainfracloud.org/results/lionheartp/nobara-testing/fedora-\41-i386/
 type=rpm-md
 skip_if_unavailable=True
 gpgcheck=1

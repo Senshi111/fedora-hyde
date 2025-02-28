@@ -19,7 +19,7 @@ font_scale=$ROFI_SELECT_SCALE
 
 # set font name
 font_name=${ROFI_SELECT_FONT:-$ROFI_FONT}
-font_name=${font_name:-$(get_hyprConf "ROFI_FONT")}
+font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
 font_name=${font_name:-$(get_hyprConf "FONT")}
 
 # set rofi font override
@@ -30,8 +30,9 @@ icon_border=$((elem_border - 5))
 
 #// scale for monitor
 
-mon_x_res=$(hyprctl -j monitors | jq '.[] | select(.focused==true) | .width')
-mon_scale=$(hyprctl -j monitors | jq '.[] | select(.focused==true) | .scale' | sed "s/\.//")
+mon_data=$(hyprctl -j monitors)
+mon_x_res=$(jq '.[] | select(.focused==true) | if (.transform % 2 == 0) then .width else .height end' <<<"${mon_data}")
+mon_scale=$(jq '.[] | select(.focused==true) | .scale' <<<"${mon_data}" | sed "s/\.//")
 mon_x_res=$((mon_x_res * 100 / mon_scale))
 
 #// generate config

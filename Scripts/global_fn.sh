@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #|---/ /+------------------+---/ /|#
 #|--/ /-| Global functions |--/ /-|#
 #|-/ /--| Prasanth Rangan  |-/ /--|#
@@ -6,63 +6,66 @@
 
 set -e
 
+# Directory setup
 scrDir="$(dirname "$(realpath "$0")")"
 cloneDir="$(dirname "${scrDir}")" # fallback, we will use CLONE_DIR now
 cloneDir="${CLONE_DIR:-${cloneDir}}"
 confDir="${XDG_CONFIG_HOME:-$HOME/.config}"
 cacheDir="${XDG_CACHE_HOME:-$HOME/.cache}/hyde"
-aurList=("yay" "paru")
+coprList=("dnf-plugins-core") # Fedora-specific, replaces aurList
 shlList=("zsh" "fish")
 
 export cloneDir
 export confDir
 export cacheDir
-export aurList
+export coprList
 export shlList
 
+# Package management functions
 pkg_installed() {
     local PkgIn=$1
-
-    if command -v apt &>/dev/null; then
-        dpkg -l | grep -qw "${PkgIn}"
-    elif command -v dnf &>/dev/null; then
-        rpm -q "${PkgIn}" &>/dev/null
+    if dnf list installed "${PkgIn}" &>/dev/null; then
+        return 0
     else
-        echo "Unsupported package manager. Install apt or dnf."
         return 1
     fi
 }
 
-# Check a list of packages and return the first one installed
 chk_list() {
     vrType="$1"
     local inList=("${@:2}")
     for pkg in "${inList[@]}"; do
         if pkg_installed "${pkg}"; then
             printf -v "${vrType}" "%s" "${pkg}"
+            # shellcheck disable=SC2163 # dynamic variable
             export "${vrType}"
             return 0
         fi
     done
-    # print_log -sec "install" -warn "no package found in the list..." "${inList[@]}"
+    print_log -warn "no package found in the list..." "${inList[@]}"
     return 1
 }
 
-# Check if a package is available for installation
 pkg_available() {
     local PkgIn=$1
-
-    if command -v apt &>/dev/null; then
-        apt-cache show "${PkgIn}" &>/dev/null
-    elif command -v dnf &>/dev/null; then
-        dnf list "${PkgIn}" &>/dev/null
+    if dnf info "${PkgIn}" &>/dev/null; then
+        return 0
     else
-        echo "Unsupported package manager. Install apt or dnf."
         return 1
     fi
 }
 
-# NVIDIA GPU detection
+copr_available() {
+    local PkgIn=$1
+    # Check if package is available in enabled COPR repos
+    if dnf repoquery --repo=copr:* "${PkgIn}" &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# NVIDIA detection for Fedora
 nvidia_detect() {
     readarray -t dGPU < <(lspci -k | grep -E "(VGA|3D)" | awk -F ': ' '{print $NF}')
     if [ "${1}" == "--verbose" ]; then
@@ -97,20 +100,7 @@ nvidia_detect() {
     fi
 }
 
-prompt_timer() {
-    set +e
-    unset PROMPT_INPUT
-    local timsec=$1
-    local msg=$2
-    while [[ ${timsec} -ge 0 ]]; do
-        echo -ne "\r :: ${msg} (${timsec}s) : "
-        read -rt 1 -n 1 PROMPT_INPUT && break
-        ((timsec--))
-    done
-    export PROMPT_INPUT
-    echo ""
-    set -e
-}
+
 # Detect package manager
 detect_package_manager() {
     if command -v apt &> /dev/null; then
@@ -209,3 +199,10 @@ print_log() {
         cat
     fi
 }
+# Ensure required tools are installed
+if ! pkg_installed "pciutils"; then
+    sudo dnf install -y pciutils
+fi
+if ! pkg_installed "dnf-plugins-core"; then
+    sudo dnf install -y dnf-plugins-core
+fi
